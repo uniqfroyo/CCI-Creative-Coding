@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <style>
+		body {
+			margin: 0px;
+			background-color: #000000;
+			overflow: hidden;
+		}
+	</style>
+     <script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body, #container {
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+	<div id="container"></div>
+	<script id="vertexShader" type="x-shader/x-vertex">
+			void main() {
+	        gl_Position = vec4(position,1.0) ;                
+		} 
+    
+    </script>
+	<script id="fragmentShader" type="x-shader/x-fragment">
+		//============================================================
+		//PUT YOUR GLSL CODE HERE
+		//============================================================
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+// glslsandbox uniforms
+uniform float time;
+uniform vec2 resolution;
+
+// shadertoy emulation
+#define iTime time
+#define iResolution resolution
+
+// --------[ Original ShaderToy begins here ]---------- //
+
+int in_set(vec2 uv, int n) {
+    for (int i = 0; i < 8; i++) {
+        float p = pow(3., float(i));
+        if (mod(floor(uv.x *p),3.) == 1. && (mod(floor(uv.y *p),3.) == 1.)) {
+            return(0);
+        }
+    }
+    return(1);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+
+    float t = mod(.2*iTime, 1.);
+    uv -= vec2(.5,.5); //🌟control the center of the rotation 🌟//
+    
+    uv.x *= iResolution.x/iResolution.y; // 
+    
+    float s = 2.*3.14159*(t+1.)/4.;
+ //  uv = vec2(cos(s)*uv.x-sin(s)*uv.y, sin(s)*uv.x+cos(s)*uv.y); //🌟rotation direction, s is rotate speed🌟//
+      uv = vec2(cos(2.*s)*uv.x+sin(2.*s)*uv.y, sin(2.*s)*uv.x-cos(2.*s)*uv.y); 
+      
+    uv *= pow(3.,-t);
+    uv += vec2(.1,.5*pow(3.,-t));  
+    vec3 col;
+    if (in_set(uv, 6)==1) {
+        col = vec3(.1, .5+0.2*sin(iTime), .5); // color
+    } else {
+        col = vec3(.8+0.2*sin(iTime), .95, 1.);
+    }
+    
+    vec2 ab = uv - vec2(.5,.5*pow(3.,-floor(t+1.)));
+    col *= exp(-2.*sqrt(pow(ab.x,2.)+pow(ab.y,2.))); //🌟colour shader 🌟//
+    fragColor = vec4(col,1.0);
+}
+// --------[ Original ShaderToy ends here ]---------- //
+
+void main(void)
+{
+    mainImage(gl_FragColor, gl_FragCoord.xy);
+}
+    
+    
+    
+	
+		//============================================================
+		//END OF GLSL CODE
+		//============================================================
+	</script>
+	<script>
+		//change the resolution here. 1 is highest
+		var pixel_resolution = 1;
+		var container, stats;
+		var camera, scene, renderer;
+		var uniforms;
+		var mesh;
+		init();
+		animate();
+		function init() {
+			container = document.getElementById('container');
+			camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+			camera.position.z = 2;
+			camera.position.y = 0.5;
+			camera.position.x = 0;
+// 			camera.position.z = 1;
+			scene = new THREE.Scene();
+			var geometry = new THREE.PlaneGeometry(3,2,100,200);//
+			uniforms = { time: { type: 'f', value: 1.0 }, resolution: { type: 'v2', value: new THREE.Vector2() }, mouse: {type: "v2", value: new THREE.Vector2()}};
+			var material = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: document.getElementById('vertexShader').textContent, fragmentShader: document.getElementById('fragmentShader').textContent });
+			mesh = new THREE.Mesh(geometry, material);
+			scene.add(mesh);
+			renderer = new THREE.WebGLRenderer();
+			//Hack here to change resolution 
+			renderer.setPixelRatio(window.devicePixelRatio / pixel_resolution);
+            //renderer.context.enable(renderer.context.DEPTH_TEST);
+			container.appendChild(renderer.domElement);
+			onWindowResize();
+			window.addEventListener('resize', onWindowResize, false);
+	        window.addEventListener('mousemove', onMouseMove, false);
+
+		}
+		function onWindowResize(event) {
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			uniforms.resolution.value.x = renderer.domElement.width;
+			uniforms.resolution.value.y = renderer.domElement.height;
+
+		}
+		function animate() {
+			requestAnimationFrame(animate);
+		    //mesh.rotation.x += 0.00005;
+	        //mesh.rotation.y += 0.0001;
+			render();
+		}
+		function onMouseMove( event ) {
+        	uniforms.mouse.value.x = 2 * ( event.clientX / window.innerWidth );
+ 	        uniforms.mouse.value.y = 2 * ( 1-(event.clientY) / window.innerHeight
+ 	        );
+        }
+		function render() {
+			uniforms.time.value += 0.01;
+			renderer.render(scene, camera);
+		}
+	</script>
+</body>
+</html>
