@@ -258,5 +258,7 @@ void main(void)
 			renderer.render(scene, camera);
 		}
 	</script>
+	 <h4 style="color:powderblue; font-size:100%; margin: 0px;   position: absolute; left:20px; bottom:60px; font-family:verdana;">   🔵🟣 Menger Sponge 🟦🟪  </h4>
+         <p style="color:powderblue; font-size:80%; margin: 0px;   position: absolute; left:20px; bottom:30px; font-family:verdana;">  ♦️ YI DAI FROYO ♦️ </p>
 </body>
 </html>
