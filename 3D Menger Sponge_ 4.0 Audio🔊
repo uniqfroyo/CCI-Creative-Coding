@@ -356,14 +356,23 @@ maxiAudio.play = function() {
        // wave = osc.sinewave(bufferFreq+5*osc2.sinewave(bufferFreq*changeThis)*osc3.sinewave(0.1)*1000);
   
        //var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq)*10) * 1.15;
+       
        // var wave = (osc.sawn(bufferFreq) - osc2.sawn(bufferFreq*1.001));
+       
       // wave = (osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.05)-osc3.saw(bufferFreq)));
+      
       // wave = 100/(osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq)-osc3.saw(bufferFreq*0.05)))*Math.round((Math.random()));
+      
      //  wave = 1000/(osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq)-osc3.saw(bufferFreq*0.05)))+Math.round((Math.random()));
     wave = osc.sinewave(bufferFreq) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.005)-osc3.sawn(bufferFreq*43.066));
+    
      //   wave = osc.sinewave(bufferFreq+5*osc2.sinewave(bufferFreq*changeThis)*osc3.coswave(3.1415926*0.2)*40);
+     
     //  wave = osc.sinewave(bufferFreq) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.005)-osc3.sawn(bufferFreq*43.066))+ osc5.sawn(bufferFreq);
-         //var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq)*10) * 1.15;
+    
+         // wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq)*10) * 1.15;
+	 
+	wave = osc.sinewave(bufferFreq) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.005)-osc3.sawn(bufferFreq*43.066));
         counter++;
         return wave * 0.3;
       
