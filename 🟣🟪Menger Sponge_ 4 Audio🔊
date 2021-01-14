@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <style>
+		body {
+			margin: 0px;
+			background-color: #000000;
+			overflow: hidden;
+		}
+	</style>
+     <script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body, #container {
+			overflow: hidden;
+		}
+	</style>
+  
+
+ <script src = "https://mimicproject.com/libs/maximilian.js"></script>
+
+  
+</head>
+<body>
+	<div id="container"></div>
+	<script id="vertexShader" type="x-shader/x-vertex">
+		void main() {
+	        gl_Position = vec4(position,1.0) ;                
+		}
+	</script>
+	<script id="fragmentShader" type="x-shader/x-fragment">
+		//============================================================
+		//PUT YOUR GLSL CODE HERE
+		//============================================================
+
+uniform float time;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float myWave;
+
+
+float iTime;
+vec3  iResolution;
+vec3  iMouse;
+
+#define time        stemu_time
+#define resolution  stemu_resolution
+#define mouse       stemu_mouse
+
+
+#define FRACTAL_ITER 4 //🌟🌟change 方块迭代次数
+#define STEPS 150
+#define EPSILON 0.004
+
+// rotation
+mat2 rot( in float a ) {
+	float c = cos(a);
+    float s = sin(a);
+    return mat2(c,s,-s,c);	
+}
+
+// distance to a menger sponge of n = 1
+float crossDist( in vec3 p ) {
+    vec3 absp = abs(p);
+    // get the distance to the closest axis
+    float maxyz = max(absp.y, absp.z);
+    float maxxz = max(absp.x, absp.z);
+    float maxxy = max(absp.x, absp.y);
+    float cr = 1.0 - (step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*maxxz+step(maxxy, absp.z)*maxxy);
+    //  float cr = sin(iTime)*1.1 - cos(step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*m
+    // float cr = pow(0.2,iTime)*1.1 - cos(step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*m
+   
+    // cube
+    float cu = max(maxxy, absp.z) - 3.0;
+    // remove the cross from the cube
+    return max(cr, cu);
+}
+
+// menger sponge fractal
+float fractal( in vec3 p ) {
+    float scale = 1.0;
+    float dist = 0.0;
+    for (int i = 0 ; i < FRACTAL_ITER ; i++) {
+        dist = max(dist, crossDist(p)*scale);
+        //p = fract((p-1.0)*0.5) * 6.0 - 3.0;
+        //p = fract((p-1.0)*0.5) * (2.0+abs(8.0*sin(iTime))) - 3.0;
+        //p = fract((p-1.0)*0.5) * (3.0+3.0*sin(iTime)) - 3.0;
+        //p = fract((p-1.0)*0.5) * 8.0*sin(length(p)) - 3.0;
+        p = fract((p-1.0)*0.5) * 6.0*sin(iTime)*abs(sin(myWave)) - 3.0;            ////// 🌟🌟add myWave here🌟🌟 //////
+        
+        // p = fract((p-1.0)*0.5) * 6.0*sin(iTime) - 3.0; //改变X,Y,Z位置
+        
+        scale /= 3.0;
+    }
+    return dist;
+}
+
+// plane formula
+float plane( in vec3 p ) {
+    //const vec3 norm = vec3(0.57735); //添加切面
+      const vec3 norm = vec3(0.);  //🌟No plane 
+    //return dot( p, norm )-smoothstep(0.005, 1.0, sin(iTime*0.0954-2.5248)*0.5+0.5)*6.0;
+     return dot( p, norm )-smoothstep(0.005, 1.0, 0.1)*6.0;
+    //🌟 rendering, no light change 
+}
+
+// main distance function
+float de( in vec3 p ) {
+    return max(fractal(p), plane(p));
+}
+
+// normal function
+vec3 normal( in vec3 p ) {
+    //const vec3 e = vec3(0.0, 0.001, 0.0);
+    //const vec3 e = vec3(0.0, 0.1, 0.0);  
+	const vec3 e = vec3(0.2, 0.0, 0.0);
+    ////🌟🌟change the different colours🌟🌟////
+	
+    float dd = de(p);
+	return normalize(vec3(
+		dd-de(p-e.yxx),
+		dd-de(p-e.xyx),
+		dd-de(p-e.xxy)));	
+}
+
+// put normal vector in, get color out
+vec3 toColor( in vec3 normal ) {
+    vec3 color = normal*0.5+0.5;
+    color *= vec3(0.9, 0.7, 0.6);
+    color.b = cos((color.b)*4.3)*0.1+0.9;
+    return color;
+}
+
+// used for the background
+vec3 toGray( in vec3 color ) {
+    return vec3((color.r+color.g+color.b)/2.0);
+    // return vec3(color.r/2.0,color.g,color.b);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+    
+    vec2 uv = fragCoord.xy / iResolution.xy * 2.0 - 1.0;
+	uv.x *= iResolution.x / iResolution.y;
+	
+	vec3 from = vec3(-6, 0, 0);
+	vec3 dir = normalize(vec3(uv*0.6, 1.0));
+	dir.xz *= rot(3.1415*.5);
+	
+	vec2 mouse=(iMouse.xy / iResolution.xy - 0.5) * 0.5;
+    
+	 if (iMouse.z < 1.0) mouse = vec2(0.0); //🌟🌟let mouse move
+	
+	mat2 rotxz = rot(sin(iTime*0.0652-0.5)*0.8+mouse.x*5.0+2.5);
+	mat2 rotxy = rot(0.3-mouse.y*5.0);
+	
+	from.xy *= rotxy;
+    //from.xy *= rotxy*mouse;  //🌟🌟let your mouse in 
+	from.xz *= rotxz;
+    //from.xz *= rotxz*mouse;
+	dir.xy  *= rotxy;
+    //dir.xy  *= rotxy*mouse;
+	dir.xz  *= rotxz;
+
+	float totdist = 0.0;
+	bool set = false;
+    float onPlane = 0.0;
+	vec3 norm = vec3(0);
+	float ao = 0.0;
+    vec3 p = vec3(0);
+    
+ 
+         
+        
+	for (int steps = 0 ; steps < STEPS ; steps++) {
+		p = from + totdist * dir;
+		float fdist = fractal(p);
+        float pdist = plane(p);
+        float dist = max(fdist, pdist);
+        totdist += dist;
+		if (dist < EPSILON) {
+			set = true;
+            onPlane = abs(fdist-pdist);
+			norm = normal(p);
+            ao = float(steps) / float(STEPS);
+            break;
+		}
+	}
+    	
+    if (set) {
+        // get the color on the surface
+        vec3 surfaceColor = toColor(norm);
+       	surfaceColor = mix(surfaceColor, toGray(surfaceColor), 0.2);
+        surfaceColor = surfaceColor * 0.8+0.2;
+        fragColor.rgb = surfaceColor;
+        // add fog
+        fragColor.rgb -= totdist*0.04;
+        // ambient occlusion
+        fragColor.rgb -= smoothstep(0.0, 0.3, ao)*0.4;
+        // add a pulse near the plane
+        fragColor.rgb += (2.0-smoothstep(0.0, 0.02, onPlane))*surfaceColor*0.8;
+    } else {
+        // get the background color slightly desaturated 减小饱和度
+        fragColor.rgb = toColor(-dir);
+        fragColor.rgb = mix(toGray(fragColor.rgb), fragColor.rgb, 0.4)*0.8;
+    }
+    
+    //float yellowRedContrast = 0.08;
+    fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
+    fragColor.a = 1.0;
+	
+}
+
+
+#undef time
+#undef resolution
+#undef mouse
+
+void main(void)
+{
+  iTime = time;
+  iResolution = vec3(resolution, 0.0);
+  iMouse = vec3(mouse * resolution, 0.0);
+
+  mainImage(gl_FragColor, gl_FragCoord.xy);
+}
+
+
+	
+		//============================================================
+		//END OF GLSL CODE
+		//============================================================
+	
+  </script>
+	<script>
+		//change the resolution here. 1 is highest
+		var pixel_resolution = 2;
+		var container, stats;
+		var camera, scene, renderer;
+		var uniforms;
+		init();
+		animate();
+		function init() {
+			container = document.getElementById('container');
+			camera = new THREE.Camera();
+			camera.position.z = 1;
+			scene = new THREE.Scene();
+			var geometry = new THREE.PlaneBufferGeometry(2,2,100,100);
+			uniforms = { time: { type: 'f', value: 1.0 }, resolution: { type: 'v2', value: new THREE.Vector2() }, mouse: {type: "v2", value: new THREE.Vector2()}, myWave: { type: 'f', value: 1.0 }};
+			var material = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: document.getElementById('vertexShader').textContent, fragmentShader: document.getElementById('fragmentShader').textContent });
+			var mesh = new THREE.Mesh(geometry, material);
+			scene.add(mesh);
+			renderer = new THREE.WebGLRenderer();
+			//Hack here to change resolution 
+			renderer.setPixelRatio(window.devicePixelRatio / pixel_resolution);
+			//renderer.setPixelRatio(2);
+			container.appendChild(renderer.domElement);
+			onWindowResize();
+			window.addEventListener('resize', onWindowResize, false);
+	        window.addEventListener('mousemove', onMouseMove, false);
+
+		}
+		function onWindowResize(event) {
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			uniforms.resolution.value.x = renderer.domElement.width;
+			uniforms.resolution.value.y = renderer.domElement.height;
+
+		}
+		function animate() {
+			requestAnimationFrame(animate);
+			render();
+		}
+		function onMouseMove( event ) {
+        	uniforms.mouse.value.x = 2 * ( event.clientX / window.innerWidth );
+ 	        uniforms.mouse.value.y = 2 * ( 1-(event.clientY) / window.innerHeight
+ 	        );
+        }
+		function render() {
+			uniforms.time.value += 0.01;
+			renderer.render(scene, camera);
+          	uniforms.myWave.value = wave;
+
+		}
+      
+  </script>    
+<script>      
+        var maxi = maximilian();
+
+  //create an audio engine
+	var maxiEngine = new maxi.maxiAudio();
+	
+	//create two oscillators
+	var kick = new maxi.maxiSample();
+	var hihat= new maxi.maxiSample();
+	var clock = new maxi.maxiClock();
+	
+  clock.setTempo(49);
+  clock.setTicksPerBeat(4);
+	
+	
+	//when the play button is pressed...
+	let playAudio = () => {
+	  //arrange play button
+	//   playButton.style.display="none";
+	  //start the audio engine
+      
+      
+      
+    /*   -------------
+	maxiEngine.init();
+    maxiEngine.loadSample("./909a.wav", kick);
+	maxiEngine.loadSample("./hihat28.wav", hihat);
+	  
+
+
+		maxiEngine.play = function() {
+		  var wave = 0;
+      clock.ticker();
+      if (clock.isTick() ) {
+          let beatCounter = clock.playHead % 7;
+          console.log(beatCounter);
+          if ([0,3].indexOf(beatCounter) >= 0) {
+                kick.trigger();	            
+          }
+          if ([0,1,2,4,5,6].indexOf(beatCounter) >= 0) {
+                hihat.trigger();	            
+          }
+      }
+      wave = kick.playOnce();
+      let hihatSpeed = (clock.playHead % 7 / 7) + 0.5;
+      let hihatAmp = clock.playHead % 2 ? 0.3 : 1;
+      wave += hihat.playOnce(hihatSpeed) * hihatAmp;		  
+      return wave;
+		}
+        
+       --------- */
+	
+    var changeThis = 1;
+   var maximJs = maximilian();
+   var maxiAudio = new maximJs.maxiAudio();
+   
+   maxiAudio.init();
+    var osc = new maximJs.maxiOsc();
+    var osc2 = new maximJs.maxiOsc();
+    var osc3 = new maximJs.maxiOsc();
+    var osc4 = new maximJs.maxiOsc();
+    var counter = 0;
+      
+//     var canvas = document.querySelector("canvas");
+
+  	// This works out a frequency we can use that matches the buffersize
+    var bufferFreq=44100/1024;
+
+maxiAudio.play = function() {
+        //var wave = (osc.sawn(bufferFreq) - osc2.sawn(bufferFreq*1.001));
+       // wave = osc.sinewave(bufferFreq+5*osc2.sinewave(bufferFreq*changeThis)*osc3.sinewave(0.1)*1000);
+  
+       //var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq)*10) * 1.15;
+       // var wave = (osc.sawn(bufferFreq) - osc2.sawn(bufferFreq*1.001));
+      // wave = (osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.05)-osc3.saw(bufferFreq)));
+      // wave = 100/(osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq)-osc3.saw(bufferFreq*0.05)))*Math.round((Math.random()));
+     //  wave = 1000/(osc.sinewave(bufferFreq*0.05) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq)-osc3.saw(bufferFreq*0.05)))+Math.round((Math.random()));
+    wave = osc.sinewave(bufferFreq) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.005)-osc3.sawn(bufferFreq*43.066));
+     //   wave = osc.sinewave(bufferFreq+5*osc2.sinewave(bufferFreq*changeThis)*osc3.coswave(3.1415926*0.2)*40);
+    //  wave = osc.sinewave(bufferFreq) + osc4.sinewave(bufferFreq / osc2.coswave(bufferFreq*0.005)-osc3.sawn(bufferFreq*43.066))+ osc5.sawn(bufferFreq);
+         //var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq)*10) * 1.15;
+        counter++;
+        return wave * 0.3;
+      
+      
+      
+	};
+    };
+	
+	
+ playAudio();
+	</script>
+  
+  <h4 style="color:powderblue; font-size:100%; margin: 0px;   position: absolute; left:20px; bottom:60px; font-family:verdana;">   🔵🟣 Menger Sponge 🟦🟪  </h4>
+    <p style="color:powderblue; font-size:80%; margin: 0px;   position: absolute; left:20px; bottom:30px; font-family:verdana;">  ♦️ YI DAI FROYO ♦️ </p>
+  
+</body>
+</html>
