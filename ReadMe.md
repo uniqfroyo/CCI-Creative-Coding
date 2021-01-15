@@ -11,5 +11,6 @@ The process of learning coding from scratch is challenging. There are always lot
 
 Links:
 My Blog: https://www.froyodai.com/post/cci-s1-creative-coding-final-project
+
 My Video: https://www.youtube.com/watch?v=EIEP90sB-iQ
 
