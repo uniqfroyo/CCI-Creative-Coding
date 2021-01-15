@@ -62,6 +62,7 @@ float crossDist( in vec3 p ) {
     float maxxz = max(absp.x, absp.z);
     float maxxy = max(absp.x, absp.y);
     float cr = 1.0 - (step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*maxxz+step(maxxy, absp.z)*maxxy);
+    //float cr = 1.0 - abs(sin(iTime))*(step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*maxxz+step(maxxy, absp.z)*maxxy);
     //  float cr = sin(iTime)*1.1 - cos(step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*m
     // float cr = pow(0.2,iTime)*1.1 - cos(step(maxyz, absp.x)*maxyz+step(maxxz, absp.y)*m
    
