@@ -17,7 +17,7 @@ sdBox() - sdCross()
 
 sdBox() - iterate(sdCross())
 
-I also learned Ray Marching and Signed Distance functions. It is a technique for rendering, in real-time, photo-realistic scenes and objects.
+I also learned Ray Marching and Signed Distance functions. Raymarching is ray casting with large steps along the ray and a distance field function returns the minimum distance to any surface in a scene from any point. Raymarched shaders will update the distance_to_obj() function.
 
 I read many articles about fractals and learn many other fantastic fractals, like Koch snowflake, Mandelbrot Set, Julia set, Solkoch, Sierpinski triangle. "Clouds are not spheres, mountains are not cones, coastlines are not circles, and bark is not smooth, nor does lightning travel in a straight line."(Mandelbrot, 1983). Natural systems can be explained in terms of fractals, even the chromatin is a fractal and that keeps DNA from getting tangled. Fractals are complex, never-ending patterns created by repeating mathematical equations. It’s exciting to know these.
 
