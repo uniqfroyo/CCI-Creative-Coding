@@ -7,7 +7,11 @@ plane fractal first described by Wacław Sierpiński in 1916. The square is cut 
 
 ![imgname](https://www.iquilezles.org/www/articles/menger/gfx05.jpg)      ![imgname](https://www.iquilezles.org/www/articles/menger/gfx05.jpg)
 
+sdBox()                                                                    sdCross()
+
 ![imgname](https://www.iquilezles.org/www/articles/menger/gfx05.jpg)      ![imgname](https://www.iquilezles.org/www/articles/menger/gfx05.jpg)
+
+sdBox() - sdCross()                                                        sdBox() - iterate(sdCross())
 
 I read many articles about fractals and learn many other fantastic fractals, like Koch snowflake, Mandelbrot Set, Julia set, Solkoch, Sierpinski triangle. "Clouds are not spheres, mountains are not cones, coastlines are not circles, and bark is not smooth, nor does lightning travel in a straight line."(Mandelbrot, 1983). Natural systems can be explained in terms of fractals, even the chromatin is a fractal and that keeps DNA from getting tangled. Fractals are complex, never-ending patterns created by repeating mathematical equations. It’s exciting to know these.
 
