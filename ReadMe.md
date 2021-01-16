@@ -29,8 +29,7 @@ My Blog: https://www.froyodai.com/post/cci-s1-creative-coding-final-project
 
 My Video: https://www.youtube.com/watch?v=EIEP90sB-iQ
 
-My Mimic：
-https://mimicproject.com/code/ba09dafa-b723-7550-fbae-d39a047191c4 
+My Mimic：https://mimicproject.com/code/ba09dafa-b723-7550-fbae-d39a047191c4 
 
 https://mimicproject.com/code/abbb9363-1554-853d-e7fc-7137cbf4ec04 
 
